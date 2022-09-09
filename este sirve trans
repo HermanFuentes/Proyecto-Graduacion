@@ -29,12 +29,14 @@ void setup()
 //Abrimos un canal de escritura
  radio.openWritingPipe(direccion);
    radio.openReadingPipe(1, direccion);
-  radio.setPALevel(RF24_PA_MAX);
+  radio.setPALevel(RF24_PA_LOW);
   
 }
  
 void loop()
-{ 
+{      radio.stopListening();
+delay(5);
+
  //cargamos los datos en la variable datos[]
  datos[0]=analogRead(0);
  datos[1]=analogRead(1);
@@ -80,13 +82,15 @@ void loop()
   lcd.setCursor(0,0);
   lcd.print("HM:");
   lcd.setCursor(3,0);
+//int   hm= datos[3];
   lcd.print(datos[3]);
   Serial.print(" V, ");
   Serial.print("Dato5= " ); 
   lcd.setCursor(0,1);
   lcd.print("BT:");
   lcd.setCursor(3,1);
-  lcd.print(datos[4]);
+  int bt=datos[4];
+  lcd.print(bt);
   Serial.print(datos[5]);
   Serial.print(" ms, ");
   Serial.print("Dato6= " );
@@ -94,12 +98,18 @@ void loop()
   lcd.setCursor(10,0);
   lcd.print("CO:");
   lcd.setCursor(13,0);
-  lcd.print(datos[5]);
+  int co= datos[5];
+  lcd.print(co);
+  lcd.setCursor(10,1);
+  lcd.print("t:");
+  lcd.setCursor(13,1);
+  int t= datos[6];
+  lcd.print(t); delay(15);
+
  }
  else
  {
      Serial.println("------------");
  }
-     radio.stopListening();
-delay(5);
+
 }
