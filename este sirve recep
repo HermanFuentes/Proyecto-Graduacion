@@ -100,6 +100,7 @@ void loop() {
  datos[4]=map(analogRead(A1), 0, 1023, 0, 100);  
  datos[5]=map(analogRead(A2), 0, 1023, 0, 100);  
  datos[6]=dht.readTemperature();  
+ Serial.print(datos[6]);
  //enviamos los datos
  bool ok = radio.write(datos, sizeof(datos));
   //reportamos por el puerto serial los datos enviados 
