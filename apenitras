@@ -104,7 +104,7 @@ delay(5);
   lcd.print("t:");
   lcd.setCursor(13,1);
   int t= datos[6];
-  lcd.print(t); delay(15);
+  lcd.print(t); delay(150);
 
  }
  else
