@@ -1,0 +1,140 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+ #include <Servo.h>
+#include "DHT.h"
+
+//Declaremos los pines CE y el CSN
+#define CE_PIN 8
+#define CSN_PIN 9
+ #define herramienta 4
+ #define motor1 2
+ #define motor2 3
+ #define DHTPIN 5
+ #define DHTTYPE DHT11 
+ DHT dht(DHTPIN, DHTTYPE);
+    
+//Variable con la dirección del canal que se va a leer
+byte direccion[5] ={'c','a','n','a','l'}; 
+
+//creamos el objeto radio (NRF24L01)
+RF24 radio(CE_PIN, CSN_PIN);
+Servo myServo;
+Servo myServo2;
+//vector para los datos recibidos
+float datos[7];
+int angleValue=0;
+int angleValue2=0;
+void setup()
+{ 
+pinMode(herramienta, OUTPUT); 
+pinMode(motor1, OUTPUT);
+pinMode(motor2, OUTPUT);
+  dht.begin();
+ //inicializamos el NRF24L01 
+  radio.begin();
+  //inicializamos el puerto serie
+  Serial.begin(9600); 
+  
+  //Abrimos el canal de Lectura
+  radio.openReadingPipe(1, direccion);
+   radio.openWritingPipe(direccion);
+  radio.setPALevel(RF24_PA_MAX);
+
+    //empezamos a escuchar por el canal
+
+ 
+}
+ 
+void loop() {
+   datos[0]=0;
+ datos[1]=0;
+ datos[2]=0;
+  float t = dht.readTemperature();  
+    radio.startListening();
+ uint8_t numero_canal;
+ //if ( radio.available(&numero_canal) )
+ if ( radio.available() )
+ {    
+     //Leemos los datos y los guardamos en la variable datos[]
+     radio.read(datos,sizeof(datos));
+     
+     //reportamos por el puerto serial los datos recibidos
+     Serial.print("Dato0= " );
+     Serial.print(datos[0]);
+     angleValue = map(datos[0], 0, 1023, 0, 180);  
+   //izquierda
+     if (datos[0]>910){
+       digitalWrite(motor1,HIGH);
+       digitalWrite(motor2,LOW);
+       delay(150);
+        }
+     //DERECHA
+     else if(datos[0]<10){ 
+         digitalWrite(motor2,HIGH); 
+         digitalWrite(motor1,LOW);    delay(50); }   
+     else { 
+         digitalWrite(motor1,LOW);  
+         digitalWrite(motor2,LOW);   
+         delay(50);}   
+     
+
+      
+     Serial.print(" V, ");
+     Serial.print("Dato1= " );
+     Serial.print(datos[1]);
+     angleValue2 = map(datos[1], 0, 1023, 0, 180);  
+  //arriba
+    if (datos[1]>910){
+          digitalWrite(motor1,HIGH);
+       digitalWrite(motor2,HIGH);
+       delay(50);
+        }
+     else if(datos[1]<10){ 
+         digitalWrite(motor2,LOW);      
+      digitalWrite(motor1,HIGH);   delay(50);
+          }
+              else if (datos[1]>10) { 
+         digitalWrite(motor1,LOW);      
+   digitalWrite(motor2,LOW);     delay(50); 
+          }
+     Serial.print(" ms, ");
+     Serial.print("Dato2= " );
+     Serial.println(datos[2]);
+       Serial.println(angleValue);
+       if (datos[2]>100){
+        digitalWrite(herramienta,HIGH);
+        }
+        else if(datos[2]<100){ digitalWrite(herramienta,LOW);
+          }
+ }
+ else
+ {
+     Serial.println("No hay datos de radio disponibles");
+ }
+    radio.stopListening();
+
+ //test
+ datos[3]=map(analogRead(A0), 0, 1023, 0, 100);  
+ datos[4]=map(analogRead(A1), 0, 1023, 0, 100);  
+ datos[5]=map(analogRead(A2), 0, 1023, 0, 100);  
+ datos[6]=dht.readTemperature();  
+ Serial.print(datos[6]);
+ //enviamos los datos
+ bool ok = radio.write(datos, sizeof(datos));
+  //reportamos por el puerto serial los datos enviados 
+  if(ok)
+  {
+     Serial.print("Datos enviados: "); 
+     //Serial.print(datos[3]); 
+     //Serial.print(" , "); 
+    // Serial.print(datos[4]); 
+    // Serial.print(" , "); 
+   //  Serial.println(datos[5]); 
+  }
+  else
+  {
+     Serial.println("no se ha podido enviar");
+  }
+ delay(5);
+}
